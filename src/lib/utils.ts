@@ -32,3 +32,11 @@ export function formatDate(dateString: string | Date): string {
     year: 'numeric',
   }).format(date);
 }
+
+/**
+ * Verifica si una fecha de vigencia (YYYY-MM-DD) ya expiró
+ */
+export function isDateExpired(validUntilDate: string): boolean {
+  if (!validUntilDate) return false;
+  return new Date(`${validUntilDate}T23:59:59`).getTime() < Date.now();
+}

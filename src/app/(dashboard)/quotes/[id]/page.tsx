@@ -5,6 +5,8 @@ import { getCurrentUserSession } from '@/lib/auth/session';
 import { QuoteDetailView } from '@/components/quotes/quote-detail-view';
 import { Quote, QuoteActivity, QuoteItem } from '@/core/domain/types';
 
+import { isDateExpired } from '@/lib/utils';
+
 export default async function QuoteDetailPage({
   params,
 }: {
@@ -51,11 +53,15 @@ export default async function QuoteDetailPage({
     .eq('quote_id', id)
     .order('created_at', { ascending: false });
 
+  // 3. Determinar si el plazo de validez ya expiró
+  const isPastValidDate = quote.status === 'sent' && isDateExpired(quote.valid_until);
+
   return (
     <QuoteDetailView
       quote={quote as unknown as Quote}
       business={session.business}
       activities={(activities as QuoteActivity[]) || []}
+      isPastValidDate={isPastValidDate}
     />
   );
 }

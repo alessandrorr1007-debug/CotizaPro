@@ -20,18 +20,22 @@ import {
   History,
   Clock,
   Printer,
+  RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface QuoteDetailViewProps {
   quote: Quote;
   business: Business;
   activities: QuoteActivity[];
+  isPastValidDate?: boolean;
 }
 
 export function QuoteDetailView({
   quote,
   business,
   activities,
+  isPastValidDate = false,
 }: QuoteDetailViewProps) {
   const router = useRouter();
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -43,12 +47,30 @@ export function QuoteDetailView({
     router.refresh();
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Alerta de plazo vencido si aplica */}
+      {isPastValidDate && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 print:hidden">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+            <div className="text-sm">
+              <span className="font-semibold">Plazo de validez vencido:</span> Esta
+              cotización superó su fecha límite de validez ({formatDate(quote.valid_until)}).
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-amber-300 text-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 shrink-0"
+            isLoading={isUpdatingStatus}
+            onClick={() => handleStatusChange('expired')}
+          >
+            Marcar como Vencida
+          </Button>
+        </div>
+      )}
+
       {/* Barra Superior de Control y Pipeline */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3">
@@ -98,7 +120,7 @@ export function QuoteDetailView({
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                className="gap-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800"
                 isLoading={isUpdatingStatus}
                 onClick={() => handleStatusChange('accepted')}
               >
@@ -108,32 +130,72 @@ export function QuoteDetailView({
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                className="gap-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-rose-300 dark:border-rose-800"
                 isLoading={isUpdatingStatus}
                 onClick={() => handleStatusChange('rejected')}
               >
                 <XCircle className="h-4 w-4" />
                 <span>Rechazada</span>
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-slate-500 hover:text-slate-800"
+                isLoading={isUpdatingStatus}
+                onClick={() => handleStatusChange('draft')}
+                title="Volver a borrador para editar"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span>Volver a Borrador</span>
+              </Button>
             </>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrint}
-            className="gap-1.5"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Imprimir</span>
-          </Button>
+          {quote.status === 'accepted' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-slate-500 hover:text-slate-700"
+              isLoading={isUpdatingStatus}
+              onClick={() => handleStatusChange('draft')}
+              title="Reabrir cotización si el cliente solicita cambios"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span>Reabrir a Borrador</span>
+            </Button>
+          )}
 
-          <Link href={`/quotes/${quote.id}/pdf`} target="_blank">
+          {(quote.status === 'rejected' || quote.status === 'expired') && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-slate-700 dark:text-slate-200"
+              isLoading={isUpdatingStatus}
+              onClick={() => handleStatusChange('draft')}
+              title="Reactivar cotización para enviar una nueva propuesta"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span>Reactivar como Borrador</span>
+            </Button>
+          )}
+
+          <Link href={`/quotes/${quote.id}/print`} target="_blank">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Imprimir</span>
+            </Button>
+          </Link>
+
+          <a href={`/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
             <Button variant="secondary" size="sm" className="gap-1.5">
               <FileDown className="h-4 w-4" />
               <span>Descargar PDF</span>
             </Button>
-          </Link>
+          </a>
         </div>
       </div>
 
@@ -320,6 +382,8 @@ export function QuoteDetailView({
                       ? 'Cotización modificada'
                       : act.action === 'status_changed'
                       ? `Estado actualizado a "${(act.metadata as { status?: string })?.status || ''}"`
+                      : act.action === 'pdf_downloaded'
+                      ? 'Documento PDF generado / descargado'
                       : act.action}
                   </span>
                 </div>

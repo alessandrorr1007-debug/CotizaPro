@@ -25,16 +25,18 @@ export default async function DashboardLayout({
       {!session.business && <OnboardingDialog />}
 
       {/* Navegación móvil */}
-      <Navbar business={session.business} profile={session.profile} />
+      <div className="print:hidden">
+        <Navbar business={session.business} profile={session.profile} />
+      </div>
 
       {/* Barra lateral en pantallas grandes */}
-      <div className="hidden lg:flex lg:flex-col lg:min-h-screen">
+      <div className="hidden lg:flex lg:flex-col lg:min-h-screen print:hidden">
         <Sidebar business={session.business} profile={session.profile} />
       </div>
 
       {/* Contenido principal */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">{children}</div>
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 print:p-0 print:overflow-visible">
+        <div className="max-w-7xl mx-auto print:max-w-none print:w-full">{children}</div>
       </main>
     </div>
   );

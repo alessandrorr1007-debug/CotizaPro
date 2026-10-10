@@ -34,11 +34,17 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 Ejecuta el script SQL en el SQL Editor de tu proyecto en Supabase:
 `supabase/migrations/20261010000000_init_schema.sql`
 
-### 4. Pruebas del Motor de Cálculo
-Para validar los cálculos matemáticos y redondeos bancarios del motor de cotizaciones:
+### 4. Pruebas Unitarias Automatizadas
+Para ejecutar la suite completa de pruebas (motor de cálculo, validación de clientes, productos, cotizaciones y ciclo de vida/PDF):
 ```bash
-npm run test:engine
+npm run test
 ```
+O de manera individual:
+- `npm run test:engine`: Motor financiero y redondeo `HALF_UP`.
+- `npm run test:clients`: Esquema Zod de clientes.
+- `npm run test:products`: Catálogo y coerciones de precio/SKU.
+- `npm run test:quotes`: Invariantes de cotización y líneas de detalle.
+- `npm run test:pdf`: Transiciones de estado de cotizaciones y estructura para PDF.
 
 ### 5. Iniciar Servidor de Desarrollo
 ```bash
@@ -53,6 +59,7 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - **Cálculo Determinista en Servidor**: Los montos, descuentos e impuestos son calculados y validados en el backend con `QuoteCalculator`, rechazando montos manipulados por el cliente.
 - **Protección de Sesión**: Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege rutas privadas.
 - **Aprovisionamiento Atómico**: La creación de negocio y asignación del rol de propietario (`owner`) se ejecuta en una transacción atómica mediante función RPC `create_business_for_user`.
+- **Bloqueo de Modificación**: Las cotizaciones fuera de estado borrador están protegidas contra ediciones no autorizadas; el sistema exige reapertura controlada para mantener la integridad contractual.
 
 ---
 
@@ -62,7 +69,7 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - [x] **Etapa 3**: Gestión de Clientes (Directorio, CRUD y Validaciones).
 - [x] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
 - [x] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
-- [ ] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados.
+- [x] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados (Streaming binario de PDF con `@react-pdf/renderer`, vista para impresión A4, pipeline de estados `draft` ➔ `sent` ➔ `accepted`/`rejected`/`expired` y trazabilidad de eventos).
 - [ ] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial.
 - [ ] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas y Cierre de MVP.
 

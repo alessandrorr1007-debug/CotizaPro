@@ -20,6 +20,7 @@ import {
   Calendar,
   AlertTriangle,
   AlertCircle,
+  FileDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -118,6 +119,7 @@ export function QuotesTable({ initialQuotes }: QuotesTableProps) {
               { id: 'sent', label: 'Enviada' },
               { id: 'accepted', label: 'Aceptada' },
               { id: 'rejected', label: 'Rechazada' },
+              { id: 'expired', label: 'Vencida' },
             ] as const
           ).map((tab) => (
             <button
@@ -249,6 +251,21 @@ export function QuotesTable({ initialQuotes }: QuotesTableProps) {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
+
+                        <a
+                          href={`/quotes/${quote.id}/pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600"
+                            title="Descargar PDF"
+                          >
+                            <FileDown className="h-4 w-4" />
+                          </Button>
+                        </a>
 
                         {quote.status === 'draft' && (
                           <Link href={`/quotes/${quote.id}/edit`}>

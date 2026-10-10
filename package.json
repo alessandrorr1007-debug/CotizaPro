@@ -11,9 +11,11 @@
     "test:clients": "tsx tests/client-schema.test.ts",
     "test:products": "tsx tests/product-schema.test.ts",
     "test:quotes": "tsx tests/quote-schema.test.ts",
-    "test": "tsx tests/quote-calculator.test.ts && tsx tests/client-schema.test.ts && tsx tests/product-schema.test.ts && tsx tests/quote-schema.test.ts"
+    "test:pdf": "tsx tests/quote-lifecycle-and-pdf.test.ts",
+    "test": "tsx tests/quote-calculator.test.ts && tsx tests/client-schema.test.ts && tsx tests/product-schema.test.ts && tsx tests/quote-schema.test.ts && tsx tests/quote-lifecycle-and-pdf.test.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "clsx": "^2.1.1",

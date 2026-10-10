@@ -166,6 +166,24 @@ export async function updateQuoteAction(
 
   const supabase = await createClient();
 
+  // Verificar que la cotización existe y está en estado borrador
+  const { data: existingQuote, error: fetchError } = await supabase
+    .from('quotes')
+    .select('status')
+    .eq('id', quoteId)
+    .eq('business_id', session.business.id)
+    .single();
+
+  if (fetchError || !existingQuote) {
+    return { error: 'Cotización no encontrada' };
+  }
+
+  if (existingQuote.status !== 'draft') {
+    return {
+      error: 'Solo se pueden editar cotizaciones en estado borrador. Reabre la cotización como borrador si necesitas modificarla.',
+    };
+  }
+
   // 1. Actualizar cabecera
   const { error: quoteError } = await supabase
     .from('quotes')
