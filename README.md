@@ -61,7 +61,7 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - [x] **Etapa 2**: Autenticación completa (Login, Registro con Onboarding de Negocio, Cierre de Sesión), Primitivas UI y Dashboard Shell.
 - [x] **Etapa 3**: Gestión de Clientes (Directorio, CRUD y Validaciones).
 - [x] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
-- [ ] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
+- [x] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
 - [ ] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados.
 - [ ] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial.
 - [ ] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas y Cierre de MVP.
