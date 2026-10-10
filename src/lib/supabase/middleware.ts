@@ -7,7 +7,9 @@ export async function updateSession(request: NextRequest) {
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   // Si no están configuradas las variables reales, permitimos continuar sin romper en desarrollo local
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {

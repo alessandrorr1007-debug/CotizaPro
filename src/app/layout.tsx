@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Crea, calcula y administra cotizaciones comerciales profesionales en PDF con impuestos configurables y control de estados.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
       lang="es"
