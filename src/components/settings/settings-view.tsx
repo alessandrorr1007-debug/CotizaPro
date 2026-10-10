@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useActionState } from 'react';
+import React, { useActionState, useState } from 'react';
 import { Business, Profile, MemberRole } from '@/core/domain/types';
+import { getCurrencyConfig, CURRENCY_CONFIGS } from '@/lib/constants/currencies';
 import {
   updateBusinessSettingsAction,
   updateProfileSettingsAction,
@@ -24,6 +25,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  Sparkles,
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -35,6 +37,19 @@ interface SettingsViewProps {
 const initialResult: SettingsActionResult = {};
 
 export function SettingsView({ business, profile, role }: SettingsViewProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState(business.currency || 'USD');
+  const [taxRate, setTaxRate] = useState<string>(
+    business.default_tax_rate !== undefined ? String(business.default_tax_rate) : '18.00'
+  );
+
+  const currentCurrencyConfig = getCurrencyConfig(selectedCurrency);
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    setSelectedCurrency(newCurrency);
+    const config = getCurrencyConfig(newCurrency);
+    setTaxRate(String(config.defaultTaxRate));
+  };
+
   const [businessState, businessFormAction, isBusinessPending] = useActionState(
     updateBusinessSettingsAction,
     initialResult
@@ -122,14 +137,14 @@ export function SettingsView({ business, profile, role }: SettingsViewProps) {
 
                 <div>
                   <Label htmlFor="tax_id">
-                    Identificación Fiscal (RUC / RFC / NIF)
+                    Identificación Fiscal ({currentCurrencyConfig.taxIdLabel})
                   </Label>
                   <Input
                     id="tax_id"
                     name="tax_id"
                     defaultValue={business.tax_id || ''}
                     disabled={!isOwnerOrAdmin}
-                    placeholder="Ej: 20123456789"
+                    placeholder={currentCurrencyConfig.taxIdPlaceholder}
                   />
                 </div>
               </div>
@@ -137,32 +152,32 @@ export function SettingsView({ business, profile, role }: SettingsViewProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="currency" required>
-                    Moneda Principal
+                    Moneda y País Principal
                   </Label>
                   <div className="relative">
                     <select
                       id="currency"
                       name="currency"
-                      defaultValue={business.currency || 'USD'}
+                      value={selectedCurrency}
+                      onChange={(e) => handleCurrencyChange(e.target.value)}
                       disabled={!isOwnerOrAdmin}
                       className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 transition-colors focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     >
-                      <option value="USD">USD ($) — Dólar Estadounidense</option>
-                      <option value="PEN">PEN (S/) — Sol Peruano</option>
-                      <option value="EUR">EUR (€) — Euro</option>
-                      <option value="MXN">MXN ($) — Peso Mexicano</option>
-                      <option value="COP">COP ($) — Peso Colombiano</option>
-                      <option value="CLP">CLP ($) — Peso Chileno</option>
+                      {Object.values(CURRENCY_CONFIGS).map((cfg) => (
+                        <option key={cfg.code} value={cfg.code}>
+                          {cfg.code} ({cfg.symbol}) — {cfg.country} ({cfg.name})
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
-                    Moneda por defecto aplicada en nuevas cotizaciones.
+                    Al cambiar el país, el sistema sugiere automáticamente el impuesto ({currentCurrencyConfig.taxName}).
                   </p>
                 </div>
 
                 <div>
                   <Label htmlFor="default_tax_rate" required>
-                    Tasa de Impuesto / IGV / IVA (%)
+                    Tasa de Impuesto — {currentCurrencyConfig.taxName}
                   </Label>
                   <div className="relative">
                     <Input
@@ -172,13 +187,15 @@ export function SettingsView({ business, profile, role }: SettingsViewProps) {
                       step="0.01"
                       min="0"
                       max="100"
-                      defaultValue={business.default_tax_rate ?? 18.0}
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(e.target.value)}
                       disabled={!isOwnerOrAdmin}
                       placeholder="18.00"
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Porcentaje calculado automáticamente al emitir propuestas.
+                  <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Sugerido para {currentCurrencyConfig.country}: {currentCurrencyConfig.taxName}. Puedes editarlo si estás exonerado.
                   </p>
                 </div>
               </div>

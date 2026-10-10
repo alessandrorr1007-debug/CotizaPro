@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Client, Product, Quote } from '@/core/domain/types';
 import { QuoteCalculator, RawQuoteItemInput } from '@/core/engine/quote-calculator';
 import { createQuoteAction, updateQuoteAction } from '@/app/(dashboard)/quotes/actions';
+import { getCurrencyConfig, CURRENCY_CONFIGS } from '@/lib/constants/currencies';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +68,7 @@ export function QuoteBuilder({
   const [taxRate, setTaxRate] = useState<number | ''>(
     initialQuote?.tax_rate !== undefined ? initialQuote.tax_rate : defaultTaxRate
   );
+  const currencyConfig = getCurrencyConfig(currency);
   const [notes, setNotes] = useState(initialQuote?.notes || '');
   const [terms, setTerms] = useState(
     initialQuote?.terms || 'Validez de la oferta: 15 días calendario. Forma de pago: 50% al aprobar y 50% al término.'
@@ -354,21 +356,27 @@ export function QuoteBuilder({
               <select
                 id="quote_currency"
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
+                onChange={(e) => {
+                  const newCurr = e.target.value;
+                  setCurrency(newCurr);
+                  if (!initialQuote) {
+                    const cfg = getCurrencyConfig(newCurr);
+                    setTaxRate(cfg.defaultTaxRate);
+                  }
+                }}
                 className="flex w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20"
               >
-                <option value="USD">USD ($ - Dólar)</option>
-                <option value="PEN">PEN (S/ - Sol)</option>
-                <option value="EUR">EUR (€ - Euro)</option>
-                <option value="MXN">MXN ($ - Peso Mexicano)</option>
-                <option value="COP">COP ($ - Peso Colombiano)</option>
-                <option value="CLP">CLP ($ - Peso Chileno)</option>
+                {Object.values(CURRENCY_CONFIGS).map((cfg) => (
+                  <option key={cfg.code} value={cfg.code}>
+                    {cfg.code} ({cfg.symbol}) — {cfg.country} ({cfg.name})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="tax_rate">Tasa de Impuesto / IGV / IVA (%)</Label>
+            <Label htmlFor="tax_rate">Tasa de Impuesto — {currencyConfig.taxName}</Label>
             <div className="relative">
               <Receipt className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 pointer-events-none" />
               <Input
@@ -379,10 +387,13 @@ export function QuoteBuilder({
                 max="100"
                 value={taxRate}
                 onChange={(e) => setTaxRate(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="18.00"
+                placeholder={String(currencyConfig.defaultTaxRate)}
                 className="pl-10"
               />
             </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Sugerido para {currencyConfig.country}: {currencyConfig.taxName}.
+            </p>
           </div>
         </div>
       </Card>
@@ -610,7 +621,7 @@ export function QuoteBuilder({
             </div>
 
             <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-              <span>Impuesto ({calculation.tax_rate}%)</span>
+              <span>{currencyConfig.taxName.split(' ')[0] || 'Impuesto'} ({calculation.tax_rate}%)</span>
               <span className="font-medium text-slate-900 dark:text-white">
                 {formatCurrency(calculation.tax_amount, currency)}
               </span>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useActionState } from 'react';
+import React, { useActionState, useState } from 'react';
 import { onboardBusinessAction, AuthActionResult } from '@/app/(auth)/actions';
+import { getCurrencyConfig, CURRENCY_CONFIGS } from '@/lib/constants/currencies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,15 @@ const initialState: AuthActionResult = {};
 
 export function OnboardingDialog() {
   const [state, formAction, isPending] = useActionState(onboardBusinessAction, initialState);
+  const [currency, setCurrency] = useState('USD');
+  const [taxRate, setTaxRate] = useState<string>('0.00');
+  const currencyConfig = getCurrencyConfig(currency);
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    setCurrency(newCurrency);
+    const cfg = getCurrencyConfig(newCurrency);
+    setTaxRate(String(cfg.defaultTaxRate));
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
@@ -49,41 +59,41 @@ export function OnboardingDialog() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="tax_id" className="text-slate-200">
-                Identificación Fiscal (RUC/RFC)
-              </Label>
-              <Input
-                id="tax_id"
-                name="tax_id"
-                placeholder="20123456789"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div>
               <Label htmlFor="currency" className="text-slate-200">
-                Moneda Principal
+                Moneda y País
               </Label>
               <select
                 id="currency"
                 name="currency"
-                defaultValue="USD"
+                value={currency}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
                 className="flex w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-sm text-white focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20"
               >
-                <option value="USD">USD ($)</option>
-                <option value="PEN">PEN (S/)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="MXN">MXN ($)</option>
-                <option value="COP">COP ($)</option>
-                <option value="CLP">CLP ($)</option>
+                {Object.values(CURRENCY_CONFIGS).map((cfg) => (
+                  <option key={cfg.code} value={cfg.code}>
+                    {cfg.code} ({cfg.symbol}) — {cfg.country}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            <div>
+              <Label htmlFor="tax_id" className="text-slate-200">
+                {currencyConfig.taxIdLabel}
+              </Label>
+              <Input
+                id="tax_id"
+                name="tax_id"
+                placeholder={currencyConfig.taxIdPlaceholder}
+                className="bg-slate-800 border-slate-700 text-white"
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="default_tax_rate" className="text-slate-200">
-                Impuesto / IGV / IVA (%)
+                {currencyConfig.taxName}
               </Label>
               <Input
                 id="default_tax_rate"
@@ -92,7 +102,8 @@ export function OnboardingDialog() {
                 step="0.01"
                 min="0"
                 max="100"
-                defaultValue="18.00"
+                value={taxRate}
+                onChange={(e) => setTaxRate(e.target.value)}
                 className="bg-slate-800 border-slate-700 text-white"
               />
             </div>

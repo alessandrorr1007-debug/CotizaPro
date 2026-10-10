@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useActionState } from 'react';
+import React, { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { registerAction, AuthActionResult } from '@/app/(auth)/actions';
+import { getCurrencyConfig, CURRENCY_CONFIGS } from '@/lib/constants/currencies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +14,15 @@ const initialState: AuthActionResult = {};
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(registerAction, initialState);
+  const [currency, setCurrency] = useState('USD');
+  const [taxRate, setTaxRate] = useState<string>('0.00');
+  const currencyConfig = getCurrencyConfig(currency);
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    setCurrency(newCurrency);
+    const cfg = getCurrencyConfig(newCurrency);
+    setTaxRate(String(cfg.defaultTaxRate));
+  };
 
   if (state?.success && state?.message) {
     return (
@@ -134,27 +144,27 @@ export default function RegisterPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Moneda */}
+            {/* Moneda y País */}
             <div>
-              <Label htmlFor="currency">Moneda</Label>
+              <Label htmlFor="currency">Moneda y País</Label>
               <select
                 id="currency"
                 name="currency"
-                defaultValue="USD"
+                value={currency}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
                 className="flex w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 transition-colors focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
-                <option value="USD">USD ($ - Dólar)</option>
-                <option value="PEN">PEN (S/ - Sol)</option>
-                <option value="EUR">EUR (€ - Euro)</option>
-                <option value="MXN">MXN ($ - Peso Mex)</option>
-                <option value="COP">COP ($ - Peso Col)</option>
-                <option value="CLP">CLP ($ - Peso Ch)</option>
+                {Object.values(CURRENCY_CONFIGS).map((cfg) => (
+                  <option key={cfg.code} value={cfg.code}>
+                    {cfg.code} ({cfg.symbol}) — {cfg.country}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* Tasa de impuesto por defecto */}
             <div>
-              <Label htmlFor="defaultTaxRate">Impuesto por Defecto (%)</Label>
+              <Label htmlFor="defaultTaxRate">{currencyConfig.taxName}</Label>
               <Input
                 id="defaultTaxRate"
                 name="defaultTaxRate"
@@ -162,7 +172,8 @@ export default function RegisterPage() {
                 step="0.01"
                 min="0"
                 max="100"
-                defaultValue="18.00"
+                value={taxRate}
+                onChange={(e) => setTaxRate(e.target.value)}
               />
             </div>
           </div>
