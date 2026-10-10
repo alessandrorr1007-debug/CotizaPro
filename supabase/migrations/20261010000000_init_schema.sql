@@ -207,6 +207,11 @@ CREATE POLICY "Members can view their business"
     ON public.businesses FOR SELECT
     USING (public.is_business_member(id));
 
+DROP POLICY IF EXISTS "Authenticated users can create a business" ON public.businesses;
+CREATE POLICY "Authenticated users can create a business"
+    ON public.businesses FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL);
+
 DROP POLICY IF EXISTS "Owners and admins can update their business" ON public.businesses;
 CREATE POLICY "Owners and admins can update their business"
     ON public.businesses FOR UPDATE
@@ -224,6 +229,45 @@ DROP POLICY IF EXISTS "Members can view membership within their business" ON pub
 CREATE POLICY "Members can view membership within their business"
     ON public.business_members FOR SELECT
     USING (public.is_business_member(business_id));
+
+DROP POLICY IF EXISTS "Authenticated users can create business membership" ON public.business_members;
+CREATE POLICY "Authenticated users can create business membership"
+    ON public.business_members FOR INSERT
+    WITH CHECK (auth.uid() = user_id OR public.is_business_member(business_id));
+
+-- Función RPC para creación atómica de negocio y asignación de owner
+CREATE OR REPLACE FUNCTION public.create_business_for_user(
+    p_name TEXT,
+    p_currency TEXT DEFAULT 'USD',
+    p_tax_rate NUMERIC DEFAULT 18.00
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_business_id UUID;
+    v_user_id UUID := auth.uid();
+BEGIN
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no autenticado';
+    END IF;
+
+    IF trim(p_name) = '' THEN
+        RAISE EXCEPTION 'El nombre del negocio no puede estar vacío';
+    END IF;
+
+    INSERT INTO public.businesses (name, currency, default_tax_rate)
+    VALUES (trim(p_name), coalesce(p_currency, 'USD'), coalesce(p_tax_rate, 18.00))
+    RETURNING id INTO v_business_id;
+
+    INSERT INTO public.business_members (business_id, user_id, role)
+    VALUES (v_business_id, v_user_id, 'owner');
+
+    RETURN v_business_id;
+END;
+$$;
 
 -- 9.4 Clients
 DROP POLICY IF EXISTS "Members can view clients" ON public.clients;
@@ -367,6 +411,9 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+    v_business_id UUID;
+    v_business_name TEXT;
 BEGIN
     INSERT INTO public.profiles (id, email, full_name, avatar_url)
     VALUES (
@@ -379,6 +426,22 @@ BEGIN
     SET email = excluded.email,
         full_name = coalesce(excluded.full_name, public.profiles.full_name),
         avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url);
+
+    -- Si se incluyó un nombre de empresa en los metadatos de registro, aprovisionar negocio inicial
+    v_business_name := coalesce(trim(new.raw_user_meta_data->>'business_name'), '');
+    IF v_business_name <> '' THEN
+        INSERT INTO public.businesses (name, currency, default_tax_rate)
+        VALUES (
+            v_business_name,
+            coalesce(new.raw_user_meta_data->>'currency', 'USD'),
+            coalesce((new.raw_user_meta_data->>'default_tax_rate')::numeric, 18.00)
+        )
+        RETURNING id INTO v_business_id;
+
+        INSERT INTO public.business_members (business_id, user_id, role)
+        VALUES (v_business_id, new.id, 'owner');
+    END IF;
+
     RETURN new;
 END;
 $$;
