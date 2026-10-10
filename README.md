@@ -51,4 +51,18 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 ## 🔒 Arquitectura de Seguridad
 - **Aislamiento Multi-inquilino**: Las políticas RLS en PostgreSQL garantizan que cada usuario solo acceda a los datos de su negocio mediante `is_business_member(business_id)`.
 - **Cálculo Determinista en Servidor**: Los montos, descuentos e impuestos son calculados y validados en el backend con `QuoteCalculator`, rechazando montos manipulados por el cliente.
-- **Protección de Sesión**: Middleware/Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege rutas privadas.
+- **Protección de Sesión**: Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege rutas privadas.
+- **Aprovisionamiento Atómico**: La creación de negocio y asignación del rol de propietario (`owner`) se ejecuta en una transacción atómica mediante función RPC `create_business_for_user`.
+
+---
+
+## 📌 Módulos Implementados
+- [x] **Etapa 1**: Inicialización de repositorio, Next.js 16, TypeScript, Supabase SSR, Esquema SQL RLS y Motor de Cálculo Financiero.
+- [x] **Etapa 2**: Autenticación completa (Login, Registro con Onboarding de Negocio, Cierre de Sesión), Primitivas UI y Dashboard Shell.
+- [ ] **Etapa 3**: Gestión de Clientes (Directorio, CRUD y Validaciones).
+- [ ] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
+- [ ] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
+- [ ] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados.
+- [ ] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial.
+- [ ] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas y Cierre de MVP.
+
