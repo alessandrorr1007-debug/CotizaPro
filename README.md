@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CotizaPro — Microapp SaaS de Cotizaciones Comerciales
 
-## Getting Started
+CotizaPro es una aplicación SaaS diseñada para pequeños negocios y profesionales independientes que gestiona clientes, catálogo de productos/servicios y cotizaciones comerciales con cálculo de impuestos en servidor y exportación a PDF.
 
-First, run the development server:
+## 🛠️ Tecnologías
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router con React 19 y Server Actions)
+- **Lenguaje**: [TypeScript](https://www.typescriptlang.org)
+- **Base de Datos y Autenticación**: [Supabase](https://supabase.com) (PostgreSQL con Row Level Security)
+- **Estilos**: [Tailwind CSS v4](https://tailwindcss.com) y Lucide Icons
+- **Validación**: [Zod](https://zod.dev)
 
+---
+
+## 🚀 Inicio Rápido
+
+### 1. Clonar el repositorio e instalar dependencias
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configuración de Variables de Entorno
+Copia el archivo `.env.example` a `.env.local`:
+```bash
+cp .env.example .env.local
+```
+Configura tus credenciales de Supabase en `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-clave-anon
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Migración de Base de Datos
+Ejecuta el script SQL en el SQL Editor de tu proyecto en Supabase:
+`supabase/migrations/20261010000000_init_schema.sql`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Pruebas del Motor de Cálculo
+Para validar los cálculos matemáticos y redondeos bancarios del motor de cotizaciones:
+```bash
+npm run test:engine
+```
 
-## Learn More
+### 5. Iniciar Servidor de Desarrollo
+```bash
+npm run dev
+```
+Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔒 Arquitectura de Seguridad
+- **Aislamiento Multi-inquilino**: Las políticas RLS en PostgreSQL garantizan que cada usuario solo acceda a los datos de su negocio mediante `is_business_member(business_id)`.
+- **Cálculo Determinista en Servidor**: Los montos, descuentos e impuestos son calculados y validados en el backend con `QuoteCalculator`, rechazando montos manipulados por el cliente.
+- **Protección de Sesión**: Middleware/Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege rutas privadas.
