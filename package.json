@@ -10,7 +10,8 @@
     "test:engine": "tsx tests/quote-calculator.test.ts",
     "test:clients": "tsx tests/client-schema.test.ts",
     "test:products": "tsx tests/product-schema.test.ts",
-    "test": "tsx tests/quote-calculator.test.ts && tsx tests/client-schema.test.ts && tsx tests/product-schema.test.ts"
+    "test:quotes": "tsx tests/quote-schema.test.ts",
+    "test": "tsx tests/quote-calculator.test.ts && tsx tests/client-schema.test.ts && tsx tests/product-schema.test.ts && tsx tests/quote-schema.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
 export const quoteItemSchema = z.object({
-  product_id: z.string().uuid().optional().nullable(),
+  product_id: z
+    .string()
+    .uuid()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)),
   description: z.string().min(1, 'La descripción es obligatoria').max(500),
   quantity: z.coerce.number().positive('La cantidad debe ser mayor a 0'),
   unit_price: z.coerce.number().min(0, 'El precio no puede ser negativo'),
