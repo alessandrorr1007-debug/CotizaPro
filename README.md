@@ -45,6 +45,7 @@ O de manera individual:
 - `npm run test:products`: Catálogo y coerciones de precio/SKU.
 - `npm run test:quotes`: Invariantes de cotización y líneas de detalle.
 - `npm run test:pdf`: Transiciones de estado de cotizaciones y estructura para PDF.
+- `npm run test:dashboard`: Métricas, KPIs deterministas y embudo de estados.
 
 ### 5. Iniciar Servidor de Desarrollo
 ```bash
@@ -70,6 +71,6 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - [x] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
 - [x] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
 - [x] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados (Streaming binario de PDF con `@react-pdf/renderer`, vista para impresión A4, pipeline de estados `draft` ➔ `sent` ➔ `accepted`/`rejected`/`expired` y trazabilidad de eventos).
-- [ ] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial.
+- [x] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial (Dashboard analítico en tiempo real: volumen cotizado, tasa de conversión, cartera pendiente, embudo de estados, historial reciente de cotizaciones y auditoría de eventos comerciales).
 - [ ] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas y Cierre de MVP.
 
