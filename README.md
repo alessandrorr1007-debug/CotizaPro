@@ -46,6 +46,7 @@ O de manera individual:
 - `npm run test:quotes`: Invariantes de cotización y líneas de detalle.
 - `npm run test:pdf`: Transiciones de estado de cotizaciones y estructura para PDF.
 - `npm run test:dashboard`: Métricas, KPIs deterministas y embudo de estados.
+- `npm run test:e2e`: Auditoría de seguridad y flujo comercial integrado E2E.
 
 ### 5. Iniciar Servidor de Desarrollo
 ```bash
@@ -53,18 +54,25 @@ npm run dev
 ```
 Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 
+### 6. Compilación de Producción
+```bash
+npm run build
+npm run start
+```
+
 ---
 
 ## 🔒 Arquitectura de Seguridad
-- **Aislamiento Multi-inquilino**: Las políticas RLS en PostgreSQL garantizan que cada usuario solo acceda a los datos de su negocio mediante `is_business_member(business_id)`.
-- **Cálculo Determinista en Servidor**: Los montos, descuentos e impuestos son calculados y validados en el backend con `QuoteCalculator`, rechazando montos manipulados por el cliente.
-- **Protección de Sesión**: Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege rutas privadas.
+- **Aislamiento Multi-inquilino**: Las políticas Row Level Security (RLS) en PostgreSQL garantizan que cada usuario solo acceda a los datos de su negocio mediante la función `is_business_member(business_id)`.
+- **Cálculo Determinista en Servidor**: Los subtotales, descuentos e impuestos son calculados y validados estrictamente en el backend con `QuoteCalculator`, rechazando cualquier intento de manipulación client-side.
+- **Protección de Sesión**: Proxy de Next.js (`src/proxy.ts`) sincroniza tokens de sesión y protege automáticamente rutas privadas redirigiendo accesos no autenticados.
 - **Aprovisionamiento Atómico**: La creación de negocio y asignación del rol de propietario (`owner`) se ejecuta en una transacción atómica mediante función RPC `create_business_for_user`.
-- **Bloqueo de Modificación**: Las cotizaciones fuera de estado borrador están protegidas contra ediciones no autorizadas; el sistema exige reapertura controlada para mantener la integridad contractual.
+- **Integridad Referencial y Bloqueo**: Se impide la eliminación de clientes o productos con historial de cotizaciones (`ON DELETE RESTRICT`). Las cotizaciones fuera de estado borrador están protegidas contra ediciones accidentales.
+- **Auditoría de Acciones**: Registro cronológico persistente en `quote_activities` para cada emisión, cambio de estado y descarga de PDF.
 
 ---
 
-## 📌 Módulos Implementados
+## 📌 Módulos Implementados (100% MVP Completado)
 - [x] **Etapa 1**: Inicialización de repositorio, Next.js 16, TypeScript, Supabase SSR, Esquema SQL RLS y Motor de Cálculo Financiero.
 - [x] **Etapa 2**: Autenticación completa (Login, Registro con Onboarding de Negocio, Cierre de Sesión), Primitivas UI y Dashboard Shell.
 - [x] **Etapa 3**: Gestión de Clientes (Directorio, CRUD y Validaciones).
@@ -72,5 +80,5 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - [x] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
 - [x] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados (Streaming binario de PDF con `@react-pdf/renderer`, vista para impresión A4, pipeline de estados `draft` ➔ `sent` ➔ `accepted`/`rejected`/`expired` y trazabilidad de eventos).
 - [x] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial (Dashboard analítico en tiempo real: volumen cotizado, tasa de conversión, cartera pendiente, embudo de estados, historial reciente de cotizaciones y auditoría de eventos comerciales).
-- [ ] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas y Cierre de MVP.
+- [x] **Etapa 8**: Auditoría de Seguridad, Pruebas Integradas E2E y Cierre de MVP (Aislamiento multi-inquilino verificado, sanitización Zod en Server Actions, 7 suites de pruebas automatizadas al 100%, TypeScript estricto y compilación optimizada en producción).
 

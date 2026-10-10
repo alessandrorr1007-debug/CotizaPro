@@ -31,7 +31,7 @@ export async function getCurrentUserSession(): Promise<CurrentUserSession | null
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   // 2. Obtener negocio y membresía
   const { data: membership } = await supabase
@@ -42,7 +42,7 @@ export async function getCurrentUserSession(): Promise<CurrentUserSession | null
     `)
     .eq('user_id', user.id)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   const business = (membership?.businesses as unknown as Business) || null;
   const role = (membership?.role as MemberRole) || null;
