@@ -60,7 +60,7 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador.
 - [x] **Etapa 1**: Inicialización de repositorio, Next.js 16, TypeScript, Supabase SSR, Esquema SQL RLS y Motor de Cálculo Financiero.
 - [x] **Etapa 2**: Autenticación completa (Login, Registro con Onboarding de Negocio, Cierre de Sesión), Primitivas UI y Dashboard Shell.
 - [x] **Etapa 3**: Gestión de Clientes (Directorio, CRUD y Validaciones).
-- [ ] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
+- [x] **Etapa 4**: Catálogo de Productos y Servicios (Precios, SKUs y Unidades).
 - [ ] **Etapa 5**: Creación y Edición de Cotizaciones (Cálculo de impuestos en servidor).
 - [ ] **Etapa 6**: Generación de Cotizaciones en PDF y Control de Estados.
 - [ ] **Etapa 7**: Panel de Indicadores y Trazabilidad Comercial.
